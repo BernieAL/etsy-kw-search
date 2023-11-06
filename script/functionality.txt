@@ -1,0 +1,13 @@
+take client search terms
+from resulting listings
+    collect titles
+    collect prices
+    store names
+repeat for a few more pages
+
+click each listing
+    collect terms from both sections of related searches
+
+
+analysis
+    count word freq
