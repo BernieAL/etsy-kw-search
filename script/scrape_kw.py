@@ -94,18 +94,19 @@ try:
     time.sleep(2)
     for child_el in child_listing_short:
         
-        # child_el.find_element(By.XPATH,"//p>span[contains(text(), 'From shop')]").text) #DOESNT WORK YET
-
-        div_containing_store_name = child_el.find_element(By.XPATH, "//div[contains(@class, 'wt-mb-xs-1')]")
-        spans = div_containing_store_name.find_elements(By.TAG_NAME,'span')
-        for span in spans:
-            print(span.text)
-
+        
+        
+        # #this gets store name, it doesnt work when combined as single statement
+        # div_containing_store_name = child_el.find_element(By.XPATH, "//div[contains(@class, 'wt-mb-xs-1')]")
+        # print(div_containing_store_name.find_element(By.XPATH,'//span[4]').text)
+        
+    
         # child_obj = {
         #     'title':child_el.find_element(By.CLASS_NAME,"v2-listing-card__title").get_attribute('title'),
         #     'price':child_el.find_element(By.CLASS_NAME,"lc-price").text,
         #     'listing_link': child_el.find_element(By.CSS_SELECTOR,'a').get_attribute('href'),
-        #     'store_name': child_el.find_element(By.XPATH,"//span[contains(text(), 'From shop')]").text) #DOESNT WORK YET
+        #     'store_name': div_containing_store_name = child_el.find_element(By.XPATH, "//div[contains(@class, 'wt-mb-xs-1')]")
+                           # print(div_containing_store_name.find_element(By.XPATH,'//span[4]').text)
         # }
         # # print(child_obj)
         # print('------------')
