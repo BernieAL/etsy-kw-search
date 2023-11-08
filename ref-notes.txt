@@ -1,0 +1,3 @@
+https://saucelabs.com/resources/blog/selenium-tips-css-selectors
+https://selenium-python.readthedocs.io/locating-elements.html
+https://www.selenium.dev/documentation/webdriver/elements/locators/

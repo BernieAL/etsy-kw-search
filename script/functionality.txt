@@ -1,13 +1,36 @@
-take client search terms
-from resulting listings
+Input: take in client search terms
+Overall functionality:
+
+    scrape data from search results 
+    put into array
+    perform analysys
+
+
+
+on listings results page  (3 cols by 12 rows = 36 max listings on each page -> 10 page search would be 360 results collected)
+    get count of total results "xxxx results with ads"
     collect titles
     collect prices
+    collect product link
     store names
-repeat for a few more pages
+    note if freeshipping offered
 
-click each listing
-    collect terms from both sections of related searches
+WHAT: 
+    repeat for a few more pages
+HOW: 
+    page navigation function to visit addtl pages
 
 
-analysis
-    count word freq
+WHAT: 
+    click each listing
+        collect terms from both sections of related searches on listing page
+HOW: 
+seperate script or function to visit each collected product linki
+
+analysis (pandas)
+    #of results analyzed
+    word freq - word cloud
+    group by sellers, show most common sellers showing up under this search
+    show how many sellers offer free shipping
+    avg price of listing
+    highest and lowest
