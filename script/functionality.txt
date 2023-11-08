@@ -7,7 +7,7 @@ Overall functionality:
 
 
 
-on listings results page  (3 cols by 12 rows = 36 max listings on each page -> 10 page search would be 360 results collected)
+on listings results page  (4 cols by 12 rows = 48 max listings on each page -> 10 page search would be 480 results collected)
     get count of total results "xxxx results with ads"
     collect titles
     collect prices
