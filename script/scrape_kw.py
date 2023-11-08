@@ -15,8 +15,9 @@ import json
 
 chrome_options = Options()
 chrome_options.add_experimental_option("detach", True)
+# chrome_options.add_argument("--headless=new")
 # driver = webdriver.Chrome(executable_path=r'C:\browserdrivers\chromedriver\chromedriver.exe')
-driver = webdriver.Chrome()
+driver = webdriver.Chrome(options=chrome_options)
 
 
 #UTIL AND NAV FUNCTIONS
@@ -157,21 +158,40 @@ def scrape_results_listings(child_listing_objects):
             # print(div_containing_store_name.find_element(By.XPATH,'//span[4]').text)
             
             #free shipping indicator test - collect and mark if store offers free shipping
-        
-            child_obj = {
-                'title':child_el.find_element(By.CLASS_NAME,"v2-listing-card__title").get_attribute('title'),
-                'price':child_el.find_element(By.CLASS_NAME,"lc-price").text,
-                'listing_link': child_el.find_element(By.CSS_SELECTOR,'a').get_attribute('href')
-                # 'store_name': div_containing_store_name = child_el.find_element(By.XPATH, "//div[contains(@class, 'wt-mb-xs-1')]")
-                #             print(div_containing_store_name.find_element(By.XPATH,'//span[4]').text)
-                # 'free_shipping': 
-            }
-            print(f"{child_obj} \n ----------  \n")
-            child_listing_objects.append(child_obj)
-            # print(child_listing_objects)
+            promotion_badge_line = driver.find_element(By.CLASS_NAME,"promotion-badge-line")
+            # print(promotion_badge_line.text)
+            free_shipping_bool = driver.find_element(By.XPATH,"//span[contains(@class,'wt-text-grey') and .//*[text()='Free shipping'])")
+            print(free_shipping_bool.text)
+
+            # child_obj = {
+            #     'title':child_el.find_element(By.CLASS_NAME,"v2-listing-card__title").get_attribute('title'),
+            #     'price':child_el.find_element(By.CLASS_NAME,"lc-price").text,
+            #     'listing_link': child_el.find_element(By.CSS_SELECTOR,'a').get_attribute('href')
+            #     # 'store_name': div_containing_store_name = child_el.find_element(By.XPATH, "//div[contains(@class, 'wt-mb-xs-1')]")
+            #     #             print(div_containing_store_name.find_element(By.XPATH,'//span[4]').text)
+            #     # 'free_shipping': 
+            # }
+            # print(f"{child_obj} \n ----------  \n")
+            # child_listing_objects.append(child_obj)
+            # # print(child_listing_objects)
+
+
     except NoSuchElementException as e:
         print(e)
+
+
 #TESTING
+term1 = 'busybabeshoppe'
+term2 = 'keychain'
+
+# Ex. https://www.etsy.com/search?q=pearl%20keychain%20wristlet&ref=search_bar
+etsy_root_search_url = f'https://www.etsy.com/search?q={term1}%20{term2}&ref=search_bar'
+driver.get(etsy_root_search_url)
+time.sleep(2)
+test_array = []
+scrape_results_listings(test_array)
+
+
 
 
 def main_driver(term1='gold',term2='keychain',num_pages=2):
@@ -225,4 +245,4 @@ def main_driver(term1='gold',term2='keychain',num_pages=2):
         pass
     
 
-main_driver()
+# main_driver()
