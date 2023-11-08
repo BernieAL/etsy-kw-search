@@ -10,6 +10,8 @@ from selenium.common.exceptions import ElementNotVisibleException, StaleElementR
 from selenium.common.exceptions import NoSuchElementException
 import time
 import pandas as pd
+import json
+
 
 chrome_options = Options()
 chrome_options.add_experimental_option("detach", True)
@@ -50,14 +52,17 @@ def get_next_page(next_page_num):
 
     """
     try:
+        # store curr_url as prev_url before changing to new page
         prev_url =  driver.current_url
         driver.get(f"https://www.etsy.com/search?q=pearl+keychain&explicit=1&order=price_desc&page={next_page_num}&ref=pagination")
+        #get curr_url after page change
         curr_url = driver.current_url
         
-        #LAST PAGE REDIRECT SAFETY NET
-        # if we are at page n and try to go to page n+1, if we are brought back to page n again - we could be in the '+21 page safety net redirect'
-            #try once more but with n+2 this time, if we are brought back to page n again, then we are in the safety net and page n is the LAST PAGE
-        
+        """
+        LAST PAGE REDIRECT SAFETY NET
+            if we are at page n and try to go to page n+1, if we are brought back to page n again - we could be in the '+21 page safety net redirect'
+                try once more but with n+2 this time, if we are brought back to page n again, then we are in the safety net and page n is the LAST PAGE
+        """
         #if we tried to navigate to new url and its still the same as prev_url
         if prev_url == curr_url:
             #page n+2 check
@@ -67,8 +72,11 @@ def get_next_page(next_page_num):
             if prev_url == curr_url:
                 return ("last page reached")
             
-        #check page for notice saying "page not found" - this means there are no more pages for this search     
+        #check page for notice saying "page not found" - this means there are no more pages for this search    
+        # if this element is found, return message saying page DNE
         pg_not_found = driver.find_element(By.XPATH,"//p[@contains='We couldn't find any results for pearl keychain']")
+        if pg_not_found:
+            return('Request Page DNE')
         
     except:
         pass
@@ -83,14 +91,20 @@ assert url now has page num greater than prev url
         curr_url = (f"https://www.etsy.com/search?q=pearl+keychain&explicit=1&order=price_desc&page={3}&ref=pagination")
 
 """
-get_next_page()
+# term1 = 'busybabeshoppe'
+# term2 = 'tote'
+
+# # Ex. https://www.etsy.com/search?q=pearl%20keychain%20wristlet&ref=search_bar
+# etsy_root_search_url = f'https://www.etsy.com/search?q={term1}%20{term2}&ref=search_bar'
+# driver.get(etsy_root_search_url)
+# print(get_next_page(250))
 
 
 
 
 
 
-def scrape_results_listings():
+def scrape_results_listings(child_listing_objects):
     """READ ME
 
         Runs on Etsy Search result listings page
@@ -129,8 +143,8 @@ def scrape_results_listings():
         # FOR TESTING- shorten list for testing - REMOVE LATER
         child_listing_short = child_listings[:4]
 
-        #dict to hold child objects with desired values
-        child_listing_objects = []
+        # #dict to hold child objects with desired values
+        # child_listing_objects = []
 
         time.sleep(1)
 
@@ -147,14 +161,14 @@ def scrape_results_listings():
             child_obj = {
                 'title':child_el.find_element(By.CLASS_NAME,"v2-listing-card__title").get_attribute('title'),
                 'price':child_el.find_element(By.CLASS_NAME,"lc-price").text,
-                'listing_link': child_el.find_element(By.CSS_SELECTOR,'a').get_attribute('href'),
+                'listing_link': child_el.find_element(By.CSS_SELECTOR,'a').get_attribute('href')
                 # 'store_name': div_containing_store_name = child_el.find_element(By.XPATH, "//div[contains(@class, 'wt-mb-xs-1')]")
                 #             print(div_containing_store_name.find_element(By.XPATH,'//span[4]').text)
                 # 'free_shipping': 
             }
             print(f"{child_obj} \n ----------  \n")
             child_listing_objects.append(child_obj)
-            print(child_listing_objects)
+            # print(child_listing_objects)
     except NoSuchElementException as e:
         print(e)
 #TESTING
@@ -166,7 +180,7 @@ def main_driver(term1='gold',term2='keychain',num_pages=2):
     term2 = 'tote'
 
     
-
+    
     # Ex. https://www.etsy.com/search?q=pearl%20keychain%20wristlet&ref=search_bar
     etsy_root_search_url = f'https://www.etsy.com/search?q={term1}%20{term2}&ref=search_bar'
 
@@ -187,13 +201,28 @@ def main_driver(term1='gold',term2='keychain',num_pages=2):
 
              #navigate to next page, increment counter ahead of pg visit
              curr_pg_num+=1
-             if(get_next_page(curr_pg_num))=='last page reached':
-                 print("end of pages reached ahead of user request")
-                 break;
+             get_next_page(curr_pg_num)
+            #  if(get_next_page(curr_pg_num))=='last page reached':
+            #      print("end of pages reached - could not make it user reqeust pg num")
+            #      break;
              
         #write child_listing_obj to csv
-        
+        # print(child_listing_objects)
+        # # Convert the array to a Pandas DataFrame
+        # df = pd.DataFrame(child_listing_objects)
 
+        # # Save the DataFrame to a CSV file
+        # df.to_csv("scraped_listings.csv", index=False)
+
+
+        # Write the array of objects to the JSON file
+        output_file="scraped_listings.json"
+        with open(output_file, "w") as json_file:
+            json.dump(child_listing_objects, json_file, indent=4)
+
+        print("Data has been written to", output_file)
     except:
         pass
     
+
+main_driver()
