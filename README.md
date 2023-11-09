@@ -4,7 +4,7 @@
 ## Purpose:
 This tool is for performing an Etsy search and scraping the details off of the resulting listings. User can collect and analyze results for possible keywords they are considering for their listing to determine if keywords are viable and likely to increase SEO exposure for their listings to increase sales.
 
-## Ex Use-case Scenario. 
+## Ex. Use-case Scenario. 
   * User wants to sell Pearl keychain
   * User wants to know details about listings that result from searching "Pearl keychain"
   * Details such as:
