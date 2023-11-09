@@ -1,22 +1,22 @@
 # etsy-kw-search
 
-###
-This tool is for performing an etsy search and scraping the details off of the resulting listings
 
 ## Purpose:
-User can collect and analyze results for possible keywords they are considering for their listing
-#Ex. 
+This tool is for performing an Etsy search and scraping the details off of the resulting listings. User can collect and analyze results for possible keywords they are considering for their listing to determine if keywords are viable and likely to increase SEO exposure for their listings to increase sales.
+
+## Ex Use-case Scenario. 
   * User wants to sell Pearl keychain
   * User wants to know details about listings that result from searching "Pearl keychain"
   * Details such as:
-    keywords in title used by competitors (most common, outliers etc)
-    stores that have the most listings appearing under given search term
-    Avg,Hi,Low, listing prices for similar items
-    If Freeshipping is offered
+    * keywords in title used by competitors (most common, outliers etc) - to develop listing titles with high-hit rate
+    * Stores with the most listings appearing under a given search term to gauge category dominance and competition
+    * Avg,High,Low, listing prices for similar items - to determine price strategy
+    * If Free shipping is offered - as a perk to attract customers
 
   * With these details, the user can determine if their original search term is worth including in
   their listing titles - allowing them to save time and avoid saturated or dead-end search terms
   ---------------
+  ## Ex. Code
   term_1 = "Pearl" <br>
   term_2 = "keychain" <br>
   pages_to_visit = 4 <br>
