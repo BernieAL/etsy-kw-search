@@ -12,12 +12,45 @@ import time
 import pandas as pd
 import json
 
+from selenium_stealth import stealth
 
-chrome_options = Options()
-chrome_options.add_experimental_option("detach", True)
-# chrome_options.add_argument("--headless=new")
-# driver = webdriver.Chrome(executable_path=r'C:\browserdrivers\chromedriver\chromedriver.exe')
-driver = webdriver.Chrome(options=chrome_options)
+with open("valid_proxy_list.txt","r") as f:
+    #read valid proxies into array
+    proxies = f.read().split("\n")
+
+options = webdriver.ChromeOptions()
+options.add_argument("start-maximized")
+options.add_experimental_option("excludeSwitches",["enable-automation"])
+options.add_experimental_option("useAutomationExtension",False)
+options.add_experimental_option("detach", True)
+driver = webdriver.Chrome(options=options)
+
+
+stealth(driver, user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+    languages = ["en-US", "en"],
+    vendor = "Google Inc.",
+    platform = "Win32",
+    webgl_vendor = "Intel Inc.",
+    renderer = "Intel Iris OpenGL Engine",
+    fix_hairline = False,
+    run_on_insecure_origins = False,)
+
+# def visit_links(links):
+#     for link in links:
+#         try:
+#             options.add_argument(f'--proxy-server={proxies[counter]}')
+#             print(f'TRYING: {proxies[counter]}')
+#             driver.get(link)
+#             time.sleep(10)
+#         except:
+#             print(f'FAILED: {proxies[counter]}')
+            
+#         finally:
+#             counter +=1
+#     counter = 0
+
+
+
 
 
 #UTIL AND NAV FUNCTIONS
@@ -41,7 +74,7 @@ def write_to_csv(file_path,data):
     pass
 
 
-def get_next_page(next_page_num):
+def get_next_page_req(next_page_num):
     """
     Recieves next page num to visit, appends into url
 
@@ -110,7 +143,7 @@ def scrape_results_listings(child_listing_objects):
 
         Runs on Etsy Search result listings page
         Called for each search results page visited
-        Popultes child_listing_objects[] array
+        Populates child_listing_objects[] array
             each listing is encapsualted as an object and stored in the array for later use
 
             child_el is list element nested in parent OL
@@ -194,6 +227,8 @@ scrape_results_listings(test_array)
 
 
 
+
+
 def main_driver(term1='gold',term2='keychain',num_pages=2):
     
     term1 = 'busybabeshoppe'
@@ -203,12 +238,17 @@ def main_driver(term1='gold',term2='keychain',num_pages=2):
     
     # Ex. https://www.etsy.com/search?q=pearl%20keychain%20wristlet&ref=search_bar
     etsy_root_search_url = f'https://www.etsy.com/search?q={term1}%20{term2}&ref=search_bar'
+    proxy_counter = 0
+    pg_limit_proxy = 3   #num_pages / 3
 
     try:
+        #add proxy to chrome options
+        options.add_argument(f'--proxy-server={proxies[proxy_counter]}')
         #navigate to root search URL
         driver.get(etsy_root_search_url)
         #root url counts as page 1
         curr_pg_num = 1
+        proxy_pg_count = 1
 
         #dict to hold child objects with scraped values
         child_listing_objects = []
@@ -216,17 +256,31 @@ def main_driver(term1='gold',term2='keychain',num_pages=2):
         #curr pg = 1, we are on first page of search results
         while curr_pg_num < num_pages:
              
-             #scrape data for each listing on current page
-             scrape_results_listings(child_listing_objects)
+            """
+            if current proxy has reached page limit,
+            load new proxy ahead of new scrape
+            """
+            try:
+                if proxy_pg_count == pg_limit_proxy:
+                    #get next proxy in list
+                    proxy_counter+=1
+                    options.add_argument(f'--proxy-server={proxies[proxy_counter]}')
+                    #reset pg count for new proxy
+                    proxy_pg_count = 0
 
-             #navigate to next page, increment counter ahead of pg visit
-             curr_pg_num+=1
-             get_next_page(curr_pg_num)
-            #  if(get_next_page(curr_pg_num))=='last page reached':
-            #      print("end of pages reached - could not make it user reqeust pg num")
-            #      break;
-             
-        #write child_listing_obj to csv
+                #scrape with current proxy
+                scrape_results_listings(child_listing_objects,curr_pg_num)
+                #increment pg visit count for current proxy
+                proxy_pg_count+=1
+                #increment page count ahead of visiting next page
+                curr_pg_num+=1
+                get_next_page_req(curr_pg_num)
+            except:
+                print("Error")
+           
+            
+           
+         #write child_listing_obj to csv
         # print(child_listing_objects)
         # # Convert the array to a Pandas DataFrame
         # df = pd.DataFrame(child_listing_objects)
