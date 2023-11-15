@@ -11,10 +11,14 @@ from selenium.common.exceptions import NoSuchElementException
 import time
 import pandas as pd
 import json
+import os
 
 from selenium_stealth import stealth
 
-with open("valid_proxy_list.txt","r") as f:
+
+
+file_path = os.path.join(os.pardir,"proxy_utils","valid_proxy_list.txt")
+with open(file_path,"r") as f:
     #read valid proxies into array
     proxies = f.read().split("\n")
 
@@ -35,26 +39,11 @@ stealth(driver, user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb
     fix_hairline = False,
     run_on_insecure_origins = False,)
 
-# def visit_links(links):
-#     for link in links:
-#         try:
-#             options.add_argument(f'--proxy-server={proxies[counter]}')
-#             print(f'TRYING: {proxies[counter]}')
-#             driver.get(link)
-#             time.sleep(10)
-#         except:
-#             print(f'FAILED: {proxies[counter]}')
-            
-#         finally:
-#             counter +=1
-#     counter = 0
-
-
 
 
 
 #UTIL AND NAV FUNCTIONS
-"""
+"""READ ME _UTIL,NAV FUNCTIONS
 navigate to next page - can be done using url or clicking page buttons
 url for pagination: 
     https://www.etsy.com/search?q=pearl+keychain&ref=pagination&page=2
@@ -68,14 +57,12 @@ QUESTIONS:
     at which point we know the page doesnt exist if we get this message
 """
 
-
-
 def write_to_csv(file_path,data):
     pass
 
 
 def get_next_page_req(next_page_num):
-    """
+    """READ ME- FUNCTION DESCRIPTION
     Recieves next page num to visit, appends into url
 
     etsy has 21 page safety net - 
@@ -92,8 +79,7 @@ def get_next_page_req(next_page_num):
         #get curr_url after page change
         curr_url = driver.current_url
         
-        """
-        LAST PAGE REDIRECT SAFETY NET
+        """READ ME - LAST PAGE REDIRECT SAFETY NET
             if we are at page n and try to go to page n+1, if we are brought back to page n again - we could be in the '+21 page safety net redirect'
                 try once more but with n+2 this time, if we are brought back to page n again, then we are in the safety net and page n is the LAST PAGE
         """
@@ -138,7 +124,7 @@ assert url now has page num greater than prev url
 
 
 
-def scrape_results_listings(child_listing_objects):
+def scrape_results_listings(child_listing_objects,curr_pg_num):
     """READ ME
 
         Runs on Etsy Search result listings page
@@ -164,7 +150,7 @@ def scrape_results_listings(child_listing_objects):
         # search_bar = driver.find_element(By.ID,"global-enhancements-search-query")
         # search_bar.send_keys(term1 + Keys.RETURN)
         
-        time.sleep(2)
+        time.sleep(3)
         # result_container_div = driver.find_element(By.CLASS_NAME,"wt-bg-white wt-display-block wt-pb-xs-2 wt-mt-xs-0")
         
         
@@ -180,7 +166,7 @@ def scrape_results_listings(child_listing_objects):
         # #dict to hold child objects with desired values
         # child_listing_objects = []
 
-        time.sleep(1)
+        
 
         for child_el in child_listing_short:
             
@@ -213,23 +199,23 @@ def scrape_results_listings(child_listing_objects):
         print(e)
 
 
-#TESTING
-term1 = 'busybabeshoppe'
-term2 = 'keychain'
+# #TESTING
+# term1 = 'busybabeshoppe'
+# term2 = 'keychain'
 
-# Ex. https://www.etsy.com/search?q=pearl%20keychain%20wristlet&ref=search_bar
-etsy_root_search_url = f'https://www.etsy.com/search?q={term1}%20{term2}&ref=search_bar'
-driver.get(etsy_root_search_url)
-time.sleep(2)
-test_array = []
-scrape_results_listings(test_array)
-
-
+# # Ex. https://www.etsy.com/search?q=pearl%20keychain%20wristlet&ref=search_bar
+# etsy_root_search_url = f'https://www.etsy.com/search?q={term1}%20{term2}&ref=search_bar'
+# driver.get(etsy_root_search_url)
+# time.sleep(2)
+# test_array = []
+# scrape_results_listings(test_array)
 
 
 
 
-def main_driver(term1='gold',term2='keychain',num_pages=2):
+
+
+def main_driver(term1='gold',term2='keychain',num_pages=3):
     
     term1 = 'busybabeshoppe'
     term2 = 'tote'
@@ -239,16 +225,16 @@ def main_driver(term1='gold',term2='keychain',num_pages=2):
     # Ex. https://www.etsy.com/search?q=pearl%20keychain%20wristlet&ref=search_bar
     etsy_root_search_url = f'https://www.etsy.com/search?q={term1}%20{term2}&ref=search_bar'
     proxy_counter = 0
-    pg_limit_proxy = 3   #num_pages / 3
+    proxy_pg_limit = 3   #num_pages / 3
 
     try:
         #add proxy to chrome options
         options.add_argument(f'--proxy-server={proxies[proxy_counter]}')
-        #navigate to root search URL
-        driver.get(etsy_root_search_url)
+        # #navigate to root search URL
+        # driver.get(etsy_root_search_url)
         #root url counts as page 1
-        curr_pg_num = 1
-        proxy_pg_count = 1
+        curr_pg_num = 0
+        proxy_pg_count = 0
 
         #dict to hold child objects with scraped values
         child_listing_objects = []
@@ -256,12 +242,21 @@ def main_driver(term1='gold',term2='keychain',num_pages=2):
         #curr pg = 1, we are on first page of search results
         while curr_pg_num < num_pages:
              
-            """
-            if current proxy has reached page limit,
-            load new proxy ahead of new scrape
-            """
+            
+          
             try:
-                if proxy_pg_count == pg_limit_proxy:
+                driver.get(etsy_root_search_url)
+
+                #if we reached page limit for current proxy, load new proxy from list ahead of new scrape
+                #otherwise do nothing and skip to scrape
+                if proxy_pg_count == proxy_pg_limit:
+                    
+                    #if we are at last proxy in list, reset proxy_counter back to 0 - puts us back at beginnng of proxy list 
+                    #otherwise do nothing and skip to next block
+                    if proxy_counter == len(proxies):
+                        proxy_counter == 0
+                        
+                    
                     #get next proxy in list
                     proxy_counter+=1
                     options.add_argument(f'--proxy-server={proxies[proxy_counter]}')
@@ -270,13 +265,18 @@ def main_driver(term1='gold',term2='keychain',num_pages=2):
 
                 #scrape with current proxy
                 scrape_results_listings(child_listing_objects,curr_pg_num)
+
                 #increment pg visit count for current proxy
                 proxy_pg_count+=1
+
                 #increment page count ahead of visiting next page
                 curr_pg_num+=1
+                time.sleep(10)
                 get_next_page_req(curr_pg_num)
+
             except:
                 print("Error")
+                break
            
             
            
@@ -299,4 +299,4 @@ def main_driver(term1='gold',term2='keychain',num_pages=2):
         pass
     
 
-# main_driver()
+main_driver()
